@@ -113,7 +113,7 @@ challenge(7, (rawInput) => {
 
   console.log("[Part1] Result:", resultPart1, "\n");
 
-  let resultPart2 = Infinity;
+  let resultPart2 = Number.POSITIVE_INFINITY;
   const unusedSpace = 70000000 - calcSize(fs);
   const neededSpace = 30000000 - unusedSpace;
 
