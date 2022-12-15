@@ -4,6 +4,7 @@ type Monkey = {
   number: number;
   items: number[];
   inspectedItems: number;
+  divisor: number;
   calculateWorryLevel: (item: number) => number;
   findTargetMonkey: (worryLevel: number) => number;
 };
@@ -35,6 +36,7 @@ const setupMonkeys = (input: string): Monkey[] => {
       number: Number(number.replace(":", "")),
       items: starting.replace("Starting items: ", "").split(",").map(Number),
       inspectedItems: 0,
+      divisor,
       calculateWorryLevel: (item) => {
         const value = valueInput === "old" ? item : Number(valueInput);
 
@@ -78,19 +80,30 @@ const findBiggestTwo = (numbers: number[]) => {
   );
 };
 
-const part1 = (rawInput: string) => {
+const gcd = (a: number, b: number): number => (a ? gcd(b % a, a) : b);
+
+export const lcm = (a: number, b: number): number => (a * b) / gcd(a, b);
+
+const monkeyAction = (rawInput: string, rounds: number, advanced?: boolean) => {
   const monkeys = setupMonkeys(rawInput);
 
-  const rounds = 20;
+  const divisors = monkeys.map(({ divisor }) => divisor);
+  const manageableLvl = divisors.reduce(lcm);
 
   Array(rounds)
     .fill(0)
-    .forEach(() => {
+    .forEach((_, round) => {
       monkeys.forEach((monkey) => {
         const { calculateWorryLevel, findTargetMonkey, items } = monkey;
 
         items.forEach((item) => {
-          const newItem = Math.floor(calculateWorryLevel(item) / 3);
+          let newItem = calculateWorryLevel(item);
+
+          if (advanced) {
+            newItem = newItem % manageableLvl;
+          } else {
+            newItem = Math.floor(newItem / 3);
+          }
 
           monkey.inspectedItems = monkey.inspectedItems + 1;
 
@@ -113,41 +126,18 @@ const part1 = (rawInput: string) => {
   return monkeys;
 };
 
-challenge(11, (rawInput) => {
-  const monkeys = part1(rawInput);
-
+const calculateBusiness = (monkeys: Monkey[]) => {
   const [first, second] = findBiggestTwo(
     monkeys.map(({ inspectedItems }) => inspectedItems)
   );
 
-  console.log("[Part1]", first * second);
+  return first * second;
+};
+
+challenge(11, (rawInput) => {
+  const part1 = monkeyAction(rawInput, 20);
+  console.log("[Part1]", calculateBusiness(part1));
+
+  const part2 = monkeyAction(rawInput, 10000, true);
+  console.log("[Part2]", calculateBusiness(part2));
 });
-
-const test = `Monkey 0:
-  Starting items: 79, 98
-  Operation: new = old * 19
-  Test: divisible by 23
-    If true: throw to monkey 2
-    If false: throw to monkey 3
-
-Monkey 1:
-  Starting items: 54, 65, 75, 74
-  Operation: new = old + 6
-  Test: divisible by 19
-    If true: throw to monkey 2
-    If false: throw to monkey 0
-
-Monkey 2:
-  Starting items: 79, 60, 97
-  Operation: new = old * old
-  Test: divisible by 13
-    If true: throw to monkey 1
-    If false: throw to monkey 3
-
-Monkey 3:
-  Starting items: 74
-  Operation: new = old + 3
-  Test: divisible by 17
-    If true: throw to monkey 0
-    If false: throw to monkey 1
-`;
