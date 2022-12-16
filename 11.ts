@@ -92,7 +92,7 @@ const monkeyAction = (rawInput: string, rounds: number, advanced?: boolean) => {
 
   Array(rounds)
     .fill(0)
-    .forEach((_, round) => {
+    .forEach(() => {
       monkeys.forEach((monkey) => {
         const { calculateWorryLevel, findTargetMonkey, items } = monkey;
 

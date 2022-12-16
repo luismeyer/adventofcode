@@ -6,13 +6,36 @@ if (!cookie) {
   throw new Error("MISSING COOKIE");
 }
 
-export const challenge = async (day: number, fc: (input: string) => void) => {
-  const jsonResponse = await fetch(
-    `https://adventofcode.com/2022/day/${day}/input`,
-    { headers: { cookie } }
-  );
+const tmpPath = (day: number) => `/tmp/AdventOfCode-${day}.txt`;
 
-  fc(await jsonResponse.text());
+export const challenge = async (day: number, fc: (input: string) => void) => {
+  const tmp = tmpPath(day);
+
+  const decoder = new TextDecoder("utf-8");
+
+  let text: string;
+
+  try {
+    console.log("Reading puzzle input from cache");
+    const data = Deno.readFileSync(tmp);
+
+    text = decoder.decode(data);
+  } catch {
+    console.info("Cachemiss: Fetching fresh puzzle input...");
+
+    const jsonResponse = await fetch(
+      `https://adventofcode.com/2022/day/${day}/input`,
+      { headers: { cookie } }
+    );
+
+    text = await jsonResponse.text();
+
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    Deno.writeFileSync(tmp, data);
+  }
+
+  fc(text);
 };
 
 export const Alphabet = [
