@@ -92,3 +92,21 @@ export const Alphabet = [
   "Y",
   "Z",
 ];
+
+let lastLogLength = 0;
+
+export const logLine = (text: string) => {
+  const encoder = new TextEncoder();
+
+  const {
+    writeSync,
+    stdout: { rid },
+  } = Deno;
+
+  const clearLine = "C".repeat(lastLogLength);
+  writeSync(rid, encoder.encode(`${clearLine}\r`));
+
+  writeSync(rid, encoder.encode(`${text}\r`));
+
+  lastLogLength = text.length;
+};
